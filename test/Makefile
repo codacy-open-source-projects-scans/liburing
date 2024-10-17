@@ -65,6 +65,7 @@ test_srcs := \
 	connect.c \
 	connect-rep.c \
 	coredump.c \
+	cmd-discard.c \
 	cq-full.c \
 	cq-overflow.c \
 	cq-peek-batch.c \
@@ -211,6 +212,7 @@ test_srcs := \
 	sq-poll-share.c \
 	sqpoll-sleep.c \
 	sq-space_left.c \
+	sqwait.c \
 	stdout.c \
 	submit-and-wait.c \
 	submit-link-fail.c \
