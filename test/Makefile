@@ -31,6 +31,10 @@ ifeq ($(CONFIG_USE_SANITIZER),y)
 	XCFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls
 endif
 
+ifeq ($(CONFIG_USE_TSAN),y)
+	XCFLAGS += -fsanitize=thread -fno-omit-frame-pointer -fno-optimize-sibling-calls
+endif
+
 CXXFLAGS ?= $(CFLAGS)
 override CFLAGS += $(XCFLAGS) -DLIBURING_BUILD_TEST
 override CXXFLAGS += $(XCFLAGS) -std=c++11 -DLIBURING_BUILD_TEST
@@ -62,6 +66,7 @@ test_srcs := \
 	buf-ring-put.c \
 	ce593a6c480a.c \
 	close-opath.c \
+	conn-unreach.c \
 	connect.c \
 	connect-rep.c \
 	coredump.c \
@@ -81,10 +86,12 @@ test_srcs := \
 	eeed8b54e0df.c \
 	empty-eownerdead.c \
 	eploop.c \
+	epwait.c \
 	eventfd.c \
 	eventfd-disable.c \
 	eventfd-reg.c \
 	eventfd-ring.c \
+	evfd-short-read.c \
 	evloop.c \
 	exec-target.c \
 	exit-no-cleanup.c \
@@ -94,7 +101,10 @@ test_srcs := \
 	fd-install.c \
 	fd-pass.c \
 	fdinfo.c \
+	fdinfo-sqpoll.c \
 	fifo-nonblock-read.c \
+	fifo-futex-poll.c \
+	file-exit-unreg.c \
 	file-register.c \
 	files-exit-hang-poll.c \
 	files-exit-hang-timeout.c \
@@ -105,10 +115,12 @@ test_srcs := \
 	fixed-hugepage.c \
 	fixed-link.c \
 	fixed-reuse.c \
+	fixed-seg.c \
 	fpos.c \
 	fsnotify.c \
 	fsync.c \
 	futex.c \
+	futex-kill.c \
 	hardlink.c \
 	ignore-single-mmap.c \
 	init-mem.c \
@@ -120,6 +132,7 @@ test_srcs := \
 	io_uring_passthrough.c \
 	io_uring_register.c \
 	io_uring_setup.c \
+	iowait.c \
 	kallsyms.c \
 	lfs-openat.c \
 	lfs-openat-write.c \
@@ -140,12 +153,15 @@ test_srcs := \
 	no-mmap-inval.c \
 	nop-all-sizes.c \
 	nop.c \
+	nop32.c \
+	nop32-overflow.c \
 	ooo-file-unreg.c \
 	openat2.c \
 	open-close.c \
 	open-direct-link.c \
 	open-direct-pick.c \
 	personality.c \
+	pipe.c \
 	pipe-bug.c \
 	pipe-eof.c \
 	pipe-reuse.c \
@@ -164,20 +180,27 @@ test_srcs := \
 	pollfree.c \
 	probe.c \
 	read-before-exit.c \
+	read-inc-file.c \
 	read-mshot.c \
 	read-mshot-empty.c \
 	read-mshot-stdin.c \
 	read-write.c \
+	recv-bundle-short-ooo.c \
+	recv-inc-ooo.c \
 	recv-msgall.c \
 	recv-msgall-stream.c \
+	recv-mshot-fair.c \
 	recv-multishot.c \
 	reg-fd-only.c \
 	reg-hint.c \
 	reg-reg-ring.c \
+	reg-wait.c \
 	regbuf-clone.c \
 	regbuf-merge.c \
 	register-restrictions.c \
 	rename.c \
+	resize-rings.c \
+	ringbuf-loop.c \
 	ringbuf-read.c \
 	ringbuf-status.c \
 	ring-leak2.c \
@@ -190,6 +213,7 @@ test_srcs := \
 	send_recv.c \
 	send_recvmsg.c \
 	send-zerocopy.c \
+	sendmsg_iov_clean.c \
 	shared-wq.c \
 	short-read.c \
 	shutdown.c \
@@ -199,12 +223,12 @@ test_srcs := \
 	socket.c \
 	socket-io-cmd.c \
 	socket-getsetsock-cmd.c \
+	socket-nb.c \
 	socket-rw.c \
 	socket-rw-eagain.c \
 	socket-rw-offset.c \
 	splice.c \
 	sq-full.c \
-	sq-full-cpp.cc \
 	sqpoll-disable-exit.c \
 	sqpoll-exec.c \
 	sq-poll-dup.c \
@@ -213,6 +237,9 @@ test_srcs := \
 	sq-poll-share.c \
 	sqpoll-sleep.c \
 	sq-space_left.c \
+	sqe-mixed-nop.c \
+	sqe-mixed-bad-wrap.c \
+	sqe-mixed-uring_cmd.c \
 	sqwait.c \
 	stdout.c \
 	submit-and-wait.c \
@@ -222,6 +249,7 @@ test_srcs := \
 	sync-cancel.c \
 	teardowns.c \
 	thread-exit.c \
+	timerfd-short-read.c \
 	timeout.c \
 	timeout-new.c \
 	truncate.c \
@@ -234,6 +262,11 @@ test_srcs := \
 	wakeup-hang.c \
 	wq-aff.c \
 	xattr.c \
+	zcrx.c \
+	vec-regbuf.c \
+	timestamp.c \
+	ring-query.c \
+	mock_file.c \
 	# EOL
 
 # Please keep this list sorted alphabetically.

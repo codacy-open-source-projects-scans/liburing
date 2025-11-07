@@ -16,7 +16,7 @@ io_uring_enter \- initiate and/or complete asynchronous I/O
 .PP
 .BI "int io_uring_enter2(unsigned int " fd ", unsigned int " to_submit ,
 .BI "                    unsigned int " min_complete ", unsigned int " flags ,
-.BI "                    sigset_t *" sig ", size_t " sz );
+.BI "                    void *" arg ", size_t " sz );
 .fi
 .PP
 .SH DESCRIPTION
@@ -72,22 +72,17 @@ the system call is used with this flag set, then it will wait until at least
 one entry is free in the SQ ring.
 .TP
 .B IORING_ENTER_EXT_ARG
-Since kernel 5.11, the system calls arguments have been modified to look like
-the following:
-
-.nf
-.BI "int io_uring_enter2(unsigned int " fd ", unsigned int " to_submit ,
-.BI "                    unsigned int " min_complete ", unsigned int " flags ,
-.BI "                    const void *" arg ", size_t " argsz );
-.fi
-
-which behaves just like the original definition by default. However, if
-.B IORING_ENTER_EXT_ARG
-is set, then instead of a
+By default,
+.I arg
+is a
 .I sigset_t
-being passed in, a pointer to a
+pointer. If
+.B IORING_ENTER_EXT_ARG
+is set (supported since kernel 5.11), then
+.I arg
+is instead a pointer to a
 .I struct io_uring_getevents_arg
-is used instead and
+and
 .I argsz
 must be set to the size of this structure. The definition is as follows:
 
@@ -127,6 +122,33 @@ time of the registered clock (see
 until which the waiting should end.
 
 Available since 6.12
+
+.TP
+.B IORING_ENTER_EXT_ARG_REG
+
+When this flag is set,
+.IR arg
+is not a pointer to a
+.IR struct io_uring_getevents_arg ,
+but merely an offset into an area of wait regions previously registered with
+.BR io_uring_register (2)
+using the
+.B IORING_REGISTER_MEM_REGION
+operation.
+
+Available since 6.13
+
+.TP
+.B IORING_ENTER_NO_IOWAIT
+When this flag is set, the system call will not mark the waiting task as being
+in iowait if it is sleeping waiting on events and there are pending requests.
+This is useful if iowait isn't expected when waiting for events. It can also
+prevent extra power usage by allowing the CPU to enter lower sleep states.
+This flag is only available if the kernel supports the
+.B IORING_FEAT_NO_IOWAIT
+feature.
+
+Available since 6.15.
 
 .PP
 .PP
@@ -1457,7 +1479,7 @@ Issues the equivalent of the
 system call.
 .I fd
 must contain the file descriptor of the socket and
-.I addr
+.I len
 must contain the backlog parameter, i.e. the maximum amount of pending
 queued connections.
 
